@@ -363,7 +363,7 @@ static void run_actions(char** argv) {
 #ifdef FILESYS
       {"ls", 1, fsutil_ls},
       {"cat", 2, fsutil_cat},
-      {"rm", 2, fsutil_rm},
+      {"rm", 2, fsutil_rm},  
       {"extract", 1, fsutil_extract},
       {"append", 2, fsutil_append},
 #endif

@@ -1,42 +1,48 @@
 #ifndef USERPROG_PROCESS_H
 #define USERPROG_PROCESS_H
 
+#include <list.h>
 #include "threads/thread.h"
-#include <stdint.h>
+#include "threads/synch.h"
+#include "filesys/file.h"
+#include "filesys/filesys.h"
 
-// At most 8MB can be allocated to the stack
-// These defines will be used in Project 2: Multithreading
-#define MAX_STACK_PAGES (1 << 11)
-#define MAX_THREADS 127
+typedef int pid_t;
 
-/* PIDs and TIDs are the same type. PID should be
-   the TID of the main thread of the process */
-typedef tid_t pid_t;
-
-/* Thread functions (Project 2: Multithreading) */
-typedef void (*pthread_fun)(void*);
-typedef void (*stub_fun)(pthread_fun, void*);
-
-/* The process control block for a given process. Since
-   there can be multiple threads per process, we need a separate
-   PCB from the TCB. All TCBs in a process will have a pointer
-   to the PCB, and the PCB will have a pointer to the main thread
-   of the process, which is `special`. */
-struct process {
-  /* Owned by process.c. */
-  uint32_t* pagedir;          /* Page directory. */
-  char process_name[16];      /* Name of the main thread */
-  struct thread* main_thread; /* Pointer to main thread */
+/* States in a user process's life cycle. */
+enum process_status
+{
+    PROCESS_LOADING, /* Default state. */
+    PROCESS_FAILED,  /* Failed to load. */
+    PROCESS_NORMAL,  /* Running process. */
+    PROCESS_EXITED,  /* Exited normally. */
 };
 
-void userprog_init(void);
+/* Contains the infos that should not be discarded when thread exit. */
+struct process
+{
+    struct thread *thread;      /* Pointer to struct thread. */
+    pid_t pid;                  /* Process identifier. */
+    enum process_status status; /* Process state. */
+    int exit_code;              /* Exit code. */
+    struct list_elem allelem;   /* List element for all processes list. */
+    struct list_elem elem;      /* List element for children list. */
+    struct list children;       /* List of children. */
+    struct process *parent;     /* Parent. */
+    struct semaphore sema_load; /* Parent block on this while loading. */
+    struct semaphore sema_wait; /* Parent block on this while waiting. */
+    struct list files;          /* Opening files. */
+    int fd;                     /* Max file descriptor num. */
+    struct file *file;          /* Executable file loaded by self. */
+};
 
-pid_t process_execute(const char* file_name);
-int process_wait(pid_t);
+void process_init(void);
+tid_t process_execute(const char *file_name);
+int process_wait(tid_t);
 void process_exit(void);
 void process_activate(void);
-
-bool is_main_thread(struct thread*, struct process*);
-pid_t get_pid(struct process*);
+struct process *process_create(struct thread *t);
+struct process *get_process(pid_t pid);
+struct process *get_child(pid_t pid);
 
 #endif /* userprog/process.h */
