@@ -4,12 +4,11 @@
 #include "tests/lib.h"
 #include "tests/main.h"
 
-//const char* test_name = "floating-point";
-
 void test_main(void) {
+  test_name = "floating-point";
   msg("Computing e...");
   double e_res = sum_to_e(10);
-  if (abs(e_res - E_VAL) < TOL) {
+  if (abs_val(e_res - E_VAL) < TOL) {
     msg("Success!");
     exit(162);
   } else {

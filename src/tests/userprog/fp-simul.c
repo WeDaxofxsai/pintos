@@ -7,14 +7,13 @@
 #include "tests/lib.h"
 #include "tests/main.h"
 
-//st char* test_name = "fp-simul";
-
 void test_main(void) {
+  test_name = "fp-simul";
   msg("Computing e...");
   pid_t e_pid = exec("compute-e");
   double e_res = sum_to_e(10);
   wait(e_pid);
-  if (abs(e_res - E_VAL) < TOL) {
+  if (abs_val(e_res - E_VAL) < TOL) {
     msg("Success!");
     exit(162);
   } else {

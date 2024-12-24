@@ -93,13 +93,24 @@ struct thread {
   /* Shared between thread.c and synch.c. */
   struct list_elem elem; /* List element. */
 
-#ifdef USERPROG
+//#ifdef USERPROG
   /* Owned by process.c. */
   struct process* pcb; /* Process control block if this thread is a userprog */
-#endif
+//#endif
 
   /* Owned by thread.c. */
   unsigned magic; /* Detects stack overflow. */
+
+  int64_t ticks_blocked;
+  int base_priority;                  /* Base priority. */
+  struct list locks;                  /* Locks that the thread is holding. */
+  struct lock *lock_waiting;          /* The lock that the thread is waiting for. */
+  int ticks;                          /* The number of ticks that the thread has been running. */
+
+
+  int nice;                           // 线程的nice值，影响调度行为
+  fixed_point_t recent_cpu;                // 最近CPU使用时间   
+/*由thread.c和synch.c共享*/
 };
 
 /* Types of scheduler that the user can request the kernel
@@ -118,9 +129,11 @@ enum sched_policy {
  * Is equal to SCHED_FIFO by default. */
 extern enum sched_policy active_sched_policy;
 
+// True if the kernel should use the MLFQS scheduler
+extern bool thread_mlfqs;
+
 void thread_init(void);
 void thread_start(void);
-
 void thread_tick(void);
 void thread_print_stats(void);
 
@@ -149,4 +162,19 @@ void thread_set_nice(int);
 int thread_get_recent_cpu(void);
 int thread_get_load_avg(void);
 
+bool thread_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void blocked_thread_check(struct thread *t, void *aux UNUSED);
+bool thread_cmp_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void thread_donate_priority (struct thread *t);
+void thread_hold_the_lock(struct lock *lock);
+void mlfqs_update_load_avg_and_recent_cpu();
+void thread_remove_lock(struct lock *lock);
+void thread_update_priority(struct thread *t);
+bool lock_cmp_priority(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void mlfqs_inc_recent_cpu();
+void mlfqs_update_priority(struct thread *t);
+void thread_fair_update_ticks(void);
+
+
 #endif /* threads/thread.h */
+

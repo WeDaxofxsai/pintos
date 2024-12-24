@@ -11,7 +11,6 @@
 
 #define FPU_SIZE 108
 #define NUM_VALUES 8
-//const char* test_name = "fp-syscall";
 static int values[NUM_VALUES] = {1, 6, 2, 162, 126, 2, 6, 1};
 
 /* Invokes syscall NUMBER, passing argument ARG0, and returns the
@@ -27,6 +26,7 @@ static int values[NUM_VALUES] = {1, 6, 2, 162, 126, 2, 6, 1};
   })
 
 void test_main(void) {
+  test_name = "fp-syscall";
   uint8_t fpu_before[FPU_SIZE];
   uint8_t fpu_after[FPU_SIZE];
 
@@ -43,7 +43,7 @@ void test_main(void) {
   // Check if the FPU state is the same before and after the syscall
   // Ignore the Control Word (bytes 0-4) and the Tag Word (bytes 8-12)
   // since those are modified by the FSAVE instruction
-  compare_bytes(&fpu_before[12], &fpu_after[12], FPU_SIZE - 12, 0, test_name);
+  compare_bytes(&fpu_before[28], &fpu_after[28], FPU_SIZE - 28, 0, test_name);
   if (pop_values_from_fpu(values, NUM_VALUES)) {
     msg("Success!");
   } else {
@@ -57,7 +57,7 @@ void test_main(void) {
   ASSERT(sizeof(float) == sizeof(int));
   memcpy(&e_res_flt, &e_res, sizeof(int));
   double e_res_dbl = (double)e_res_flt;
-  if (abs(e_res_dbl - E_VAL) < TOL) {
+  if (abs_val(e_res_dbl - E_VAL) < TOL) {
     msg("Kernel computation successful");
     exit(162);
   } else {

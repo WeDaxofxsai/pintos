@@ -6,10 +6,10 @@
 #include "tests/main.h"
 
 #define NUM_VALUES 4
-//const char* test_name = "fp-asm";
 static int values[NUM_VALUES] = {1, 6, 2, 162};
 
 void test_main(void) {
+  test_name = "fp-asm";
   msg("Starting...");
   push_values_to_fpu(values, NUM_VALUES);
   wait(exec("fp-asm-helper"));
